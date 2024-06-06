@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 Add runserver.py .
 Add server server
 Add db db
+Add api api
 
 # Expose the port on which the FastAPI server will run
 EXPOSE 2121
