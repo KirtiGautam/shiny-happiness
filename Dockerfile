@@ -4,6 +4,9 @@ FROM python:3.11-slim-buster
 # Set the working directory in the container
 WORKDIR /app
 
+# Install Tesseract OCR
+RUN apt update && apt install tesseract-ocr -y
+
 # Copy the requirements file to the container
 COPY requirements.txt .
 

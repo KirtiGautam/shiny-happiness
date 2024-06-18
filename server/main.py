@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from logging.config import dictConfig
 from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,3 +43,12 @@ async def ready():
 
 # Include the new router
 app.include_router(api_router)
+
+
+@app.exception_handler(Exception)
+async def exception_handler(request, exc):
+    resp = {
+        "error": exc.__class__.__name__,
+        "messsage": exc.message
+    }
+    return JSONResponse(status_code=exc.status_code, content=resp)
