@@ -1,27 +1,27 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile
 from typing import List
-from PIL import Image
+
+from core.files.processor import Processor
+from core.ocr.extract import Extractor
 from db.models.solution_step import SolutionStep
-import io
 
 router = APIRouter()
 
-@router.post("/upload", response_model=List[SolutionStep])
-async def upload_image(image: UploadFile = File(...)):
-    try:
-        # Read the uploaded image file
-        contents = await image.read()
-        image = Image.open(io.BytesIO(contents))
+@router.post("/extract_text")
+async def upload_image(image: UploadFile) -> List[SolutionStep]:
 
-        # Process the image (this is where you would add your processing logic)
-        # For demonstration, we'll just return dummy solution steps
-        solution_steps = [
-            SolutionStep(step_number= 1, title="Step 1", description="This is the first step."),
-            SolutionStep(step_number= 2, title="Step 2", description="This is the second step."),
-            SolutionStep(step_number= 3, title="Step 3", description="This is the third step.")
-        ]
+    # Save the file to disk
+    processor = Processor(file=image)
+    path = processor.process()
 
-        return solution_steps
+    # Extract text from the image
+    extractor = Extractor(path=path)
+    extracted_text = extractor.extract()
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    extracted_lines = extracted_text.split('\n')
+
+    solution_steps = []
+    for i, line in enumerate(extracted_lines):
+        solution_steps.append(SolutionStep(step_number=i+1, title=f"Step {i+1}", description=line))
+
+    return solution_steps
